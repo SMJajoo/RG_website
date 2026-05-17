@@ -583,7 +583,7 @@ Please confirm my appointment. Thank you!`;
                   >
                     <div className="text-yellow-400 text-xl mb-4">★★★★★</div>
 
-                    <p className="text-slate-800 leading-relaxed h-40 line-clamp-4 text-base">\"{testimonial.review}\"</p>
+                    <p className="text-slate-800 leading-relaxed h-40 line-clamp-4 text-base">"{testimonial.review}"</p>
 
                     <div className="mt-6 flex items-center gap-4">
                       <div className="w-14 h-14 rounded-full bg-gradient-to-r from-teal-200 to-sky-200 flex items-center justify-center text-xl font-bold text-white">

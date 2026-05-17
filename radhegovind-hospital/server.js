@@ -36,8 +36,8 @@ app.post('/api/appointments', (req, res) => {
   try {
     const { fullName, phone, treatment, dateTime, notes } = req.body;
 
-    // Validation
-    if (!fullName || !phone || !treatment || !dateTime) {
+    // Validation (treatment is now optional)
+    if (!fullName || !phone || !dateTime) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -48,7 +48,8 @@ app.post('/api/appointments', (req, res) => {
       id: Date.now(),
       fullName,
       phone,
-      treatment,
+      // Only add treatment if present
+      ...(treatment ? { treatment } : {}),
       dateTime,
       notes: notes || '',
       status: 'Pending',

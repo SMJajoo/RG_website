@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import doctorImg from './assets/doctor.jpeg';
+import hospital_logoImg from './assets/hospital_logo.jpeg';
+import ecgImg from './assets/ecg.png';
+import high_bpImg from './assets/high_bp.png';
+import diabetesImg from './assets/diabetes.png';
+// import thyroidImg from './assets/thyroid.png';
+import spirometerImg from './assets/spirometer.png';
 
 export default function RadheGovindHospitalWebsite() {
   const [expandedService, setExpandedService] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    treatment: 'Select Treatment',
-    dateTime: '',
+    appointmentDate: '',
     notes: '',
   });
   const [formStatus, setFormStatus] = useState('');
@@ -38,41 +45,44 @@ export default function RadheGovindHospitalWebsite() {
     }));
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
     setFormStatus('');
 
     try {
-      // Send data without dateTime
-      const dataToSend = {
-        fullName: formData.fullName,
-        phone: formData.phone,
-        treatment: formData.treatment,
-        dateTime: new Date().toISOString(), // Auto-set to current time
-        notes: formData.notes,
-      };
-
-      const response = await fetch('http://localhost:3001/api/appointments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend),
+      // Format appointment date
+      const appointmentDateObj = new Date(formData.appointmentDate);
+      const dateString = appointmentDateObj.toLocaleDateString('en-IN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       });
 
-      if (response.ok) {
-        setFormStatus('success');
-        setFormData({
-          fullName: '',
-          phone: '',
-          treatment: 'Select Treatment',
-          dateTime: '',
-          notes: '',
-        });
-      } else {
-        setFormStatus('error');
-      }
+      // Construct WhatsApp message
+      const message = `Hello! I would like to book an appointment at RadheGovind Hospital.
+
+*Patient Details:*
+ Full Name: ${formData.fullName}
+ Phone: ${formData.phone}
+ Preferred Appointment Date: ${dateString}
+${formData.notes ? ` Additional Notes: ${formData.notes}` : ''}
+
+Please confirm my appointment. Thank you!`;
+
+      // Send to WhatsApp
+      const encodedMessage = encodeURIComponent(message);
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+
+      // Show success message
+      setFormStatus('success');
+      setFormData({
+        fullName: '',
+        phone: '',
+        appointmentDate: '',
+        notes: '',
+      });
     } catch (error) {
       setFormStatus('error');
       console.error('Error:', error);
@@ -158,46 +168,75 @@ export default function RadheGovindHospitalWebsite() {
 
   const testimonials = [
     {
-      name: 'Anita Sharma',
-      review: 'The doctors at RadheGovind Hospital treated my father with genuine care and patience. We felt supported throughout his recovery journey.',
+      name: 'Prakashrao Pole',
+      review: 'My blood pressure  wasn\'t under control despite taking many medicines. Someone recommended Dr.Govind Sir and he patiently explained everything during my first visit Now I\'m his regular patient he controlld it quickly with just a few medicines',
     },
     {
-      name: 'Ramesh Verma',
-      review: 'Affordable treatment, friendly staff, and experienced doctors. Our family has trusted this clinic for years.',
+      name: 'Vijay Khandagale',
+      review: 'Thank you, Doctor Govind Bhattad Sir for your excellent care. My diabetes is finally managed well. The staff is also very supportive, and the hospital is clean and affordable.',
     },
     {
-      name: 'Pooja Kulkarni',
-      review: 'Excellent consultation and compassionate guidance. The environment feels calm, clean, and reassuring.',
+      name: 'Digambar Wagatkar',
+      review: 'My thyroid problem was affecting my energy and weight Dr.Govind Bhattad gave me the right treatment and guidance. I feel so much better now he is the best doctor for thyroid issues in Nanded',
     },
     {
-      name: 'Vikram Singh',
-      review: 'Got treated for my hypertension. The doctors explained everything clearly and the follow-ups have been excellent. Highly recommended!',
+      name : 'Arshad Shik',
+      review:'Asthma made breathing difficult especially during season changes Dr. Govind Bhattad treatment improved my condition and now I breathe freely',
     },
     {
-      name: 'Priya Desai',
-      review: 'Best place for family healthcare. The staff is very welcoming and the treatment is effective. My whole family visits here now.',
+      name: 'Bhagwanrao Maske',
+      review: 'Highly recommended for diabetes care! Dr.Govind sir takes time to understand the patient and gives the right treatment my sugar levels improved within weeks',
     },
     {
-      name: 'Rajesh Kumar',
-      review: 'Very professional and caring. They took time to understand my condition and provided a comprehensive treatment plan. Thank you!',
+      name: 'Shakti Mudderaj',
+      review: 'Constant fatigue due to anemia made daily tasks difficult but the treatment at Radhe Govind Hospital changed everything now I feel stronger more active and full of energy',
     },
     {
-      name: 'Meera Patel',
-      review: 'After 2 years of struggling with diabetes, I finally found the right support here. The nutritional guidance changed my life.',
+      name : 'Dhanraj Puri',
+      review: 'I had a severe infection and was in pain Dr. Govind Bhattad sir gave me the right medicines and I recovered quickly he is a very kind and experienced doctor',
+    }
+  ];
+
+  const medicalEquipment = [
+    {
+      src: ecgImg,
+      alt: 'ECG/Heart Monitor - Heart Disease',
+      title: 'Cardiac Monitoring Equipment',
+      disease: 'Heart Disease'
     },
     {
-      name: 'Arjun Nair',
-      review: 'Visited for my asthma treatment. The doctors are very knowledgeable and the medicines prescribed have really helped me breathe better.',
+      src: high_bpImg,
+      alt: 'Blood Pressure Monitor - Hypertension',
+      title: 'Blood Pressure Monitoring',
+      disease: 'High Blood Pressure'
     },
     {
-      name: 'Sneha Chopra',
-      review: 'Great experience! The cleanliness, professionalism, and care shown by the entire team is commendable. Will recommend to everyone.',
+      src: diabetesImg,
+      alt: 'Glucometer - Diabetes Care',
+      title: 'Diabetes Management Equipment',
+      disease: 'Diabetes'
     },
+    // {
+    //   src: thyroidImg,
+    //   alt: 'Laboratory Testing - Thyroid & General Health',
+    //   title: 'Advanced Lab Testing',
+    //   disease: 'Thyroid & Health Testing'
+    // },
     {
-      name: 'Hari Menon',
-      review: 'After my paralysis attack, I did physiotherapy here. The recovery process was smooth thanks to their expert guidance and support.',
+      src: spirometerImg,
+      alt: 'Spirometer - Respiratory Testing for Asthma',
+      title: 'Respiratory Care Equipment',
+      disease: 'Asthma & Breathing Disorders'
     },
   ];
+
+  // Auto-rotate medical equipment images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % medicalEquipment.length);
+    }, 4000); // Change image every 4 seconds
+    return () => clearInterval(interval);
+  }, [medicalEquipment.length]);
 
   return (
     <div className="font-sans text-slate-700 bg-white scroll-smooth">
@@ -213,7 +252,7 @@ export default function RadheGovindHospitalWebsite() {
             <a href="#home" className="hover:text-teal-600 transition">Home</a>
             <a href="#about" className="hover:text-teal-600 transition">About</a>
             <a href="#services" className="hover:text-teal-600 transition">Services</a>
-            <a href="#testimonials" className="hover:text-teal-600 transition">Testimonials</a>
+            <a href="#testimonials" className="hover:text-teal-800 transition">Testimonials</a>
             <a href="#appointment" className="hover:text-teal-600 transition">Appointment</a>
             <a href="#contact" className="hover:text-teal-600 transition">Contact</a>
           </nav>
@@ -235,19 +274,42 @@ export default function RadheGovindHospitalWebsite() {
         <div className="max-w-7xl mx-auto px-6 py-24 lg:py-32 grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8 animate-fadeIn">
             <div className="inline-flex items-center gap-2 bg-white shadow-md rounded-full px-5 py-2 border border-teal-100 text-teal-700 text-sm font-medium">
-              ❤️ Trusted Family Healthcare Since 1992
+              🏥 Trusted Family Healthcare Since 1992
             </div>
 
             <div>
               <h2 className="text-5xl lg:text-6xl font-extrabold leading-tight text-slate-800">
-                Healing Hearts <br />
-                <span className="text-teal-600">Since 1992</span>
+                RadheGovind <br />
+                <span className="text-teal-600">Hospital</span>
               </h2>
 
-              <p className="mt-6 text-lg text-slate-600 leading-relaxed max-w-xl">
-                Quality Healthcare with Affordable Care for Every Family. Compassionate,
-                patient-first treatment designed to support long-term wellness and healthier lives.
+              <p className="mt-6 text-lg text-slate-600 leading-relaxed max-w-xl text-justify">
+                Serving our community for over 30 years with ethical, affordable, and compassionate healthcare. From preventive wellness to comprehensive disease management, we're dedicated to supporting your family's health.
               </p>
+
+              <div className="mt-8 space-y-4">
+                <div className="flex items-start gap-4">
+                  <span className="text-2xl flex-shrink-0">💰</span>
+                  <div>
+                    <p className="font-semibold text-slate-800">Affordable & Accessible</p>
+                    <p className="text-sm text-slate-600">Quality care for everyone, regardless of budget</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span className="text-2xl flex-shrink-0">👨‍⚕️</span>
+                  <div>
+                    <p className="font-semibold text-slate-800">Expert Medical Team</p>
+                    <p className="text-sm text-slate-600">Experienced doctors devoted to patient wellness</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span className="text-2xl flex-shrink-0">❤️</span>
+                  <div>
+                    <p className="font-semibold text-slate-800">Compassionate Care</p>
+                    <p className="text-sm text-slate-600">Personalized treatment with genuine concern</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-4">
@@ -272,22 +334,6 @@ export default function RadheGovindHospitalWebsite() {
                 Get Directions
               </button>
             </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
-              {[
-                '30+ Years of Care',
-                'Experienced Doctors',
-                'Affordable Treatment',
-                'Compassionate Support',
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm text-center"
-                >
-                  <p className="text-sm font-semibold text-slate-700">{item}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="relative">
@@ -295,60 +341,62 @@ export default function RadheGovindHospitalWebsite() {
             <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-sky-100 rounded-full blur-3xl opacity-70"></div>
 
             <img
-              src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?q=80&w=1200&auto=format&fit=crop"
-              alt="Professional healthcare"
-              className="relative rounded-3xl shadow-2xl object-cover h-[580px] w-full"
+              src={hospital_logoImg}
+              alt="RadheGovind Hospital"
+              className="relative rounded-full shadow-2xl object-cover h-[400px] w-[400px] mx-auto"
             />
           </div>
         </div>
       </section>
 
-      {/* About */}
-      <section id="about" className="py-24 bg-white">
+      {/* About - Doctor & Team */}
+      <section id="about" className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <img
-              src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=1200&auto=format&fit=crop"
-              alt="Doctor consulting patient"
+              src={doctorImg}
+              alt="Dr. Govind Bhattad - RadheGovind Hospital"
               className="rounded-3xl shadow-xl"
             />
           </div>
 
           <div>
             <div className="inline-block bg-teal-50 text-teal-700 px-4 py-2 rounded-full text-sm font-medium mb-5">
-              About RadheGovind Hospital
+              Our Doctor & Team
             </div>
 
             <h3 className="text-4xl font-bold text-slate-800 leading-tight">
-              Caring for Families with Compassion & Trust Since 1992
+              Expert Care with Heart & Dedication
             </h3>
 
-            <p className="mt-6 text-lg text-slate-600 leading-relaxed">
-              Founded in 1992, RadheGovind Hospital has been dedicated to providing ethical,
-              affordable, and patient-centered healthcare for individuals and families. Our mission
-              is rooted in compassion, trust, and long-term wellness.
+            <p className="mt-6 text-lg text-slate-600 leading-relaxed text-justify">
+              Our experienced medical team, led by dedicated doctors, brings years of expertise in patient care and wellness. We believe in treating each patient as family, taking time to understand their unique health needs and concerns.
             </p>
 
-            <p className="mt-5 text-lg text-slate-600 leading-relaxed">
-              We believe every patient deserves personalized treatment and supportive medical care.
-              From preventive healthcare to chronic disease management, our experienced team focuses
-              on helping patients lead healthier and happier lives.
+            <p className="mt-5 text-lg text-slate-600 leading-relaxed text-justify">
+              With comprehensive training and a commitment to staying current with modern healthcare practices, our team provides personalized attention and treatment plans tailored to help you achieve optimal health and quality of life.
             </p>
 
             <div className="mt-8 grid sm:grid-cols-2 gap-5">
               {[
-                'Ethical & Affordable Healthcare',
-                'Personalized Treatment Plans',
-                'Preventive Wellness Focus',
-                'Trusted Community Care',
+                'Years of Clinical Experience',
+                'Patient-Centered Approach',
+                'Compassionate Care Philosophy',
+                'Continuous Learning & Growth',
               ].map((point, idx) => (
-                <div key={idx} className="flex items-center gap-3 bg-slate-50 rounded-xl p-4">
-                  <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700">
+                <div key={idx} className="flex items-center gap-3 bg-white rounded-xl p-4 border border-slate-200">
+                  <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 flex-shrink-0">
                     ✓
                   </div>
                   <span className="font-medium text-slate-700">{point}</span>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-8 bg-teal-50 border-l-4 border-teal-600 rounded-lg p-6">
+              <p className="text-slate-700 italic">
+                "We treat our patients like family. Your health, comfort, and trust are our top priority. We're here to guide you through every step of your healthcare journey."
+              </p>
             </div>
           </div>
         </div>
@@ -384,11 +432,11 @@ export default function RadheGovindHospitalWebsite() {
 
                 <h4 className="text-xl font-semibold text-slate-800 mb-3">{service.title}</h4>
 
-                <p className="text-slate-600 leading-relaxed text-sm">{service.desc}</p>
+                <p className="text-slate-600 leading-relaxed text-base">{service.desc}</p>
 
                 {expandedService === index && (
                   <div className="mt-4 pt-4 border-t border-slate-200">
-                    <p className="text-slate-600 leading-relaxed text-sm">{service.details}</p>
+                    <p className="text-slate-600 leading-relaxed text-base">{service.details}</p>
                   </div>
                 )}
 
@@ -431,18 +479,66 @@ export default function RadheGovindHospitalWebsite() {
                   <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">
                     ✓
                   </div>
-                  <p className="text-lg text-slate-600">{item}</p>
+                  <p className="text-lg md:text-xl text-slate-600">{item}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <img
-              src="https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?q=80&w=1200&auto=format&fit=crop"
-              alt="Friendly medical staff"
-              className="rounded-3xl shadow-2xl"
-            />
+            <div className="relative w-full h-96 overflow-hidden rounded-3xl shadow-2xl bg-slate-100">
+              {/* Auto-rotating carousel */}
+              <div className="relative w-full h-full">
+                {medicalEquipment.map((equipment, idx) => (
+                  <div
+                    key={idx}
+                    className={`absolute inset-0 transition-opacity duration-1000 ${
+                      idx === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    <img
+                      src={equipment.src}
+                      alt={equipment.alt}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex flex-col justify-end p-6">
+                      <h4 className="text-white font-bold text-2xl">{equipment.title}</h4>
+                      <p className="text-white/90 text-lg">{equipment.disease}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Carousel indicators */}
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+                {medicalEquipment.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`h-2 rounded-full transition-all ${
+                      idx === currentImageIndex
+                        ? 'bg-white w-8'
+                        : 'bg-white/50 w-2 hover:bg-white/75'
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  ></button>
+                ))}
+              </div>
+
+              {/* Navigation arrows */}
+              <button
+                onClick={() => setCurrentImageIndex((currentImageIndex - 1 + medicalEquipment.length) % medicalEquipment.length)}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white px-4 py-2 rounded-full transition z-10"
+              >
+                ←
+              </button>
+              <button
+                onClick={() => setCurrentImageIndex((currentImageIndex + 1) % medicalEquipment.length)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white px-4 py-2 rounded-full transition z-10"
+              >
+                →
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -452,7 +548,7 @@ export default function RadheGovindHospitalWebsite() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <div className="inline-block bg-white px-4 py-2 rounded-full shadow-sm text-teal-700 text-sm font-medium mb-4">
-              Patient Testimonials
+              Google Reviews from Patients
             </div>
 
             <h3 className="text-4xl font-bold text-slate-800">
@@ -478,24 +574,24 @@ export default function RadheGovindHospitalWebsite() {
               }
             `}</style>
             
-            <div className="overflow-hidden relative">
-              <div className="scrolling-container flex gap-6 w-max">
+            <div className="overflow-hidden relative py-6">
+              <div className="scrolling-container flex gap-6 w-max h-90">
                 {[...testimonials, ...testimonials].map((testimonial, idx) => (
                   <div
                     key={idx}
-                    className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex-shrink-0 w-96 hover:shadow-2xl transition-shadow"
+                    className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 flex-shrink-0 w-100 hover:shadow-2xl transition-shadow"
                   >
                     <div className="text-yellow-400 text-xl mb-4">★★★★★</div>
 
-                    <p className="text-slate-600 leading-relaxed h-24 line-clamp-4">"{testimonial.review}"</p>
+                    <p className="text-slate-800 leading-relaxed h-40 line-clamp-4 text-base">\"{testimonial.review}\"</p>
 
                     <div className="mt-6 flex items-center gap-4">
                       <div className="w-14 h-14 rounded-full bg-gradient-to-r from-teal-200 to-sky-200 flex items-center justify-center text-xl font-bold text-white">
                         {testimonial.name.charAt(0)}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-slate-800 text-sm">{testimonial.name}</h4>
-                        <p className="text-xs text-teal-600 font-medium">Patient Review</p>
+                        <h4 className="font-semibold text-slate-800 text-base">{testimonial.name}</h4>
+                        <p className="text-sm text-teal-600 font-medium">Patient Review</p>
                       </div>
                     </div>
                   </div>
@@ -561,27 +657,14 @@ export default function RadheGovindHospitalWebsite() {
                   className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 placeholder-white/70 outline-none focus:ring-2 focus:ring-white text-white"
                 />
 
-                <select
-                  name="treatment"
-                  value={formData.treatment}
+                <input
+                  type="date"
+                  name="appointmentDate"
+                  value={formData.appointmentDate}
                   onChange={handleFormChange}
                   required
-                  className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 text-white outline-none focus:ring-2 focus:ring-white"
-                >
-                  <option value="Select Treatment" className="text-slate-700">Select Treatment</option>
-                  <option value="Heart Disease" className="text-slate-700">Heart Disease</option>
-                  <option value="High Blood Pressure" className="text-slate-700">High Blood Pressure</option>
-                  <option value="Diabetes" className="text-slate-700">Diabetes</option>
-                  <option value="Thyroid Disorder" className="text-slate-700">Thyroid Disorder</option>
-                  <option value="Memory Loss" className="text-slate-700">Memory Loss</option>
-                  <option value="Obesity" className="text-slate-700">Obesity</option>
-                  <option value="Paralysis" className="text-slate-700">Paralysis</option>
-                  <option value="Asthma" className="text-slate-700">Asthma</option>
-                  <option value="Anemia" className="text-slate-700">Anemia</option>
-                  <option value="Alcohol De-addiction" className="text-slate-700">Alcohol De-addiction</option>
-                  <option value="Insomnia" className="text-slate-700">Insomnia</option>
-                  <option value="Fever & General Illness" className="text-slate-700">Fever & General Illness</option>
-                </select>
+                  className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-white text-white"
+                />
 
                 <textarea
                   name="notes"
@@ -623,21 +706,21 @@ export default function RadheGovindHospitalWebsite() {
               We’re Here to Support Your Health Journey
             </h3>
 
-            <div className="mt-8 space-y-6 text-slate-300 text-lg">
+            <div className="mt-8 space-y-6 text-slate-300 text-xl">
               <div>
-                <h4 className="font-semibold text-white mb-1">Phone Number</h4>
-                <p>+91 95799 12389</p>
+                <h4 className="font-semibold text-white mb-2 text-lg">Phone Number</h4>
+                <p className="text-lg">+91 95799 12389</p>
               </div>
 
               <div>
-                <h4 className="font-semibold text-white mb-1">Clinic Timings</h4>
-                <p>Monday - Saturday: 9:00 AM – 8:00 PM</p>
+                <h4 className="font-semibold text-white mb-2 text-lg">Clinic Timings</h4>
+                <p className="text-lg">Monday - Saturday: 9:00 AM – 8:00 PM</p>
               </div>
 
-              <div>
-                <h4 className="font-semibold text-white mb-1">Emergency Support</h4>
-                <p>24/7 Emergency Assistance Available</p>
-              </div>
+              {/* <div>
+                <h4 className="font-semibold text-white mb-2 text-lg">Emergency Support</h4>
+                <p className="text-lg">24/7 Emergency Assistance Available</p>
+              </div> */}
             </div>
 
             <div className="flex flex-wrap gap-4 mt-10">
@@ -678,14 +761,14 @@ export default function RadheGovindHospitalWebsite() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-8">
           <div>
             <h4 className="text-2xl font-bold text-white">RadheGovind Hospital</h4>
-            <p className="mt-3 max-w-md leading-relaxed">
+            <p className="mt-3 max-w-md leading-relaxed text-base">
               Healing Hearts Since 1992 with compassionate, affordable, and patient-centered healthcare.
             </p>
           </div>
 
           <div>
-            <h5 className="text-white font-semibold mb-4">Quick Links</h5>
-            <ul className="space-y-2">
+            <h5 className="text-white font-semibold mb-4 text-lg">Quick Links</h5>
+            <ul className="space-y-2 text-base">
               <li><a href="#about" className="hover:text-white transition">About</a></li>
               <li><a href="#services" className="hover:text-white transition">Services</a></li>
               <li><a href="#appointment" className="hover:text-white transition">Appointments</a></li>
@@ -694,8 +777,8 @@ export default function RadheGovindHospitalWebsite() {
           </div>
 
           <div>
-            <h5 className="text-white font-semibold mb-4">Care & Support</h5>
-            <ul className="space-y-2">
+            <h5 className="text-white font-semibold mb-4 text-lg">Care & Support</h5>
+            <ul className="space-y-2 text-base">
               <li>Affordable Consultation</li>
               <li>Family Healthcare</li>
               <li>Preventive Wellness</li>
@@ -704,7 +787,7 @@ export default function RadheGovindHospitalWebsite() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-slate-800 pt-6 text-center text-sm">
+        <div className="mt-10 border-t border-slate-800 pt-6 text-center text-base">
           © 2026 RadheGovind Hospital. All rights reserved.
         </div>
       </footer>

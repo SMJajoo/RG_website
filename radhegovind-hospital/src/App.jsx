@@ -29,7 +29,7 @@ export default function RadheGovindHospitalWebsite() {
 
   const phoneNumber = '919579912389';
   const whatsappNumber = '919579912389';
-  const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwMisTW9D-Z1gC8YH4q_oGJ2OwGaa0I4P6hfOIYDxu7f0Hu0CghecYek_egoGQVbNrXBA/exec';
+  const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbx3WwwLAD8ECITKoPhYgZmkPhg4hNWDzl6C67cUvboFHfmLBPOb8QHaHtcXw6DPdluAkQ/exec';
 
   const handleCallNow = () => {
     window.location.href = `tel:+${phoneNumber}`;

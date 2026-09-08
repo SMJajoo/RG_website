@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import doctorImg from './assets/doctor.jpeg';
 import hospital_logoImg from './assets/hospital_logo.jpeg';
 import ecgImg from './assets/ecg.png';
@@ -25,6 +25,7 @@ export default function RadheGovindHospitalWebsite() {
   });
   const [formStatus, setFormStatus] = useState('');
   const [loading, setLoading] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const phoneNumber = '919579912389';
   const whatsappNumber = '919579912389';
@@ -55,6 +56,8 @@ export default function RadheGovindHospitalWebsite() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setLoading(true);
     setFormStatus('');
 
@@ -131,6 +134,7 @@ export default function RadheGovindHospitalWebsite() {
       setFormStatus('error');
     } finally {
       setLoading(false);
+      isSubmittingRef.current = false;
     }
   };
 

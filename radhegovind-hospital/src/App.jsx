@@ -11,9 +11,16 @@ export default function RadheGovindHospitalWebsite() {
   const [expandedService, setExpandedService] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [formData, setFormData] = useState({
-    fullName: '',
+    patientName: '',
+    age: '',
+    gender: '',
     phone: '',
-    appointmentDate: '',
+    doctor: 'gbhattad',
+    date: new Date().toISOString().split('T')[0],
+    time: '11:00',
+    purpose: '',
+    address: '',
+    referredBy: '',
     notes: '',
   });
   const [formStatus, setFormStatus] = useState('');
@@ -21,6 +28,7 @@ export default function RadheGovindHospitalWebsite() {
 
   const phoneNumber = '919579912389';
   const whatsappNumber = '919579912389';
+  const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwMisTW9D-Z1gC8YH4q_oGJ2OwGaa0I4P6hfOIYDxu7f0Hu0CghecYek_egoGQVbNrXBA/exec';
 
   const handleCallNow = () => {
     window.location.href = `tel:+${phoneNumber}`;
@@ -45,47 +53,82 @@ export default function RadheGovindHospitalWebsite() {
     }));
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setFormStatus('');
 
     try {
-      // Format appointment date
-      const appointmentDateObj = new Date(formData.appointmentDate);
-      const dateString = appointmentDateObj.toLocaleDateString('en-IN', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+      const cleanedName = formData.patientName.trim();
+      const cleanedPhone = (formData.phone || '').replace(/\D/g, '');
+      const doctorValue = formData.doctor || 'gbhattad';
+      const selectedDate = formData.date || new Date().toISOString().split('T')[0];
+      const selectedTime = formData.time || '11:00';
 
-      // Construct WhatsApp message
+      // Basic phone validation: expect 10 digits
+      if (cleanedPhone.length !== 10) {
+        setFormStatus('error');
+        setLoading(false);
+        return alert('Please enter a valid 10-digit phone number');
+      }
+
       const message = `Hello! I would like to book an appointment at RadheGovind Hospital.
 
-*Patient Details:*
- Full Name: ${formData.fullName}
- Phone: ${formData.phone}
- Preferred Appointment Date: ${dateString}
-${formData.notes ? ` Additional Notes: ${formData.notes}` : ''}
+    *Patient Details:*
+    Patient Name: ${cleanedName}
+    Phone: ${cleanedPhone}
+    Age: ${formData.age}
+    Gender: ${formData.gender}
+    Date: ${selectedDate}
+    Time: ${selectedTime}
+    Purpose: ${formData.purpose}
+    Address: ${formData.address}
+    Referred By: ${formData.referredBy}
 
-Please confirm my appointment. Thank you!`;
+    Please confirm my appointment. Thank you!`;
 
-      // Send to WhatsApp
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
 
-      // Show success message
+      const params = new URLSearchParams({
+        'Patient Name': cleanedName,
+        'Phone': cleanedPhone,
+        'Date': selectedDate,
+        'Time': selectedTime,
+        'Doctor': doctorValue,
+        'Purpose': formData.purpose || '',
+        'Age': formData.age || '',
+        'Gender': formData.gender || '',
+        'Address': formData.address || '',
+        'Referred By': formData.referredBy || '',
+        'Notes': formData.notes || '',
+      });
+
+      const response = await fetch(`${GOOGLE_SHEET_URL}?${params.toString()}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Google Sheet submission failed');
+      }
+
       setFormStatus('success');
       setFormData({
-        fullName: '',
+        patientName: '',
+        age: '',
+        gender: '',
         phone: '',
-        appointmentDate: '',
+        doctor: 'gbhattad',
+        date: new Date().toISOString().split('T')[0],
+        time: '11:00',
+        purpose: '',
+        address: '',
+        referredBy: '',
         notes: '',
       });
     } catch (error) {
-      setFormStatus('error');
       console.error('Error:', error);
+      setFormStatus('error');
     } finally {
       setLoading(false);
     }
@@ -639,18 +682,43 @@ Please confirm my appointment. Thank you!`;
               <form onSubmit={handleFormSubmit} className="grid md:grid-cols-2 gap-6">
                 <input
                   type="text"
-                  name="fullName"
-                  placeholder="Full Name"
-                  value={formData.fullName}
+                  name="patientName"
+                  placeholder="Patient Name"
+                  value={formData.patientName}
                   onChange={handleFormChange}
                   required
                   className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 placeholder-white/70 outline-none focus:ring-2 focus:ring-white text-white"
                 />
 
                 <input
+                  type="number"
+                  name="age"
+                  placeholder="Age"
+                  min="0"
+                  max="120"
+                  value={formData.age}
+                  onChange={handleFormChange}
+                  required
+                  className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 placeholder-white/70 outline-none focus:ring-2 focus:ring-white text-white"
+                />
+
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleFormChange}
+                  required
+                  className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-white text-white"
+                >
+                  <option value="" className="text-slate-800">Select Gender</option>
+                  <option value="Male" className="text-slate-800">Male</option>
+                  <option value="Female" className="text-slate-800">Female</option>
+                  <option value="Other" className="text-slate-800">Other</option>
+                </select>
+
+                <input
                   type="tel"
                   name="phone"
-                  placeholder="Phone Number"
+                  placeholder="Phone Number (10 digits)"
                   value={formData.phone}
                   onChange={handleFormChange}
                   required
@@ -659,11 +727,48 @@ Please confirm my appointment. Thank you!`;
 
                 <input
                   type="date"
-                  name="appointmentDate"
-                  value={formData.appointmentDate}
+                  name="date"
+                  value={formData.date}
                   onChange={handleFormChange}
                   required
                   className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-white text-white"
+                />
+
+                <input
+                  type="time"
+                  name="time"
+                  value={formData.time}
+                  onChange={handleFormChange}
+                  required
+                  className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-white text-white"
+                />
+
+                <input
+                  type="text"
+                  name="purpose"
+                  placeholder="Purpose (optional)"
+                  value={formData.purpose}
+                  onChange={handleFormChange}
+                  className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 placeholder-white/70 outline-none focus:ring-2 focus:ring-white text-white"
+                />
+
+                <input
+                  type="text"
+                  name="address"
+                  placeholder="Address"
+                  value={formData.address}
+                  onChange={handleFormChange}
+                  required
+                  className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 placeholder-white/70 outline-none focus:ring-2 focus:ring-white text-white"
+                />
+
+                <input
+                  type="text"
+                  name="referredBy"
+                  placeholder="Referred By (optional)"
+                  value={formData.referredBy}
+                  onChange={handleFormChange}
+                  className="bg-white/10 border border-white/20 rounded-2xl px-5 py-4 placeholder-white/70 outline-none focus:ring-2 focus:ring-white text-white"
                 />
 
                 <textarea

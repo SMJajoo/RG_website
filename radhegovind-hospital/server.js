@@ -34,23 +34,89 @@ app.get('/api/appointments', (req, res) => {
 // Create new appointment
 app.post('/api/appointments', (req, res) => {
   try {
-    const { fullName, phone, treatment, dateTime, notes } = req.body;
+    const {
+      patientName,
+      phone,
+      date,
+      time,
+      doctor,
+      purpose,
+      age,
+      gender,
+      address,
+      referredBy,
+      notes,
+    } = req.body;
 
-    // Validation (treatment is now optional)
-    if (!fullName || !phone || !dateTime) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    // Basic validation
+    if (!patientName || !phone || !date || !time) {
+      return res.status(400).json({ error: 'Missing required fields (patientName, phone, date, time)' });
     }
+
+    // Normalize phone to digits and expect 10 digits
+    const cleanedPhone = ('' + phone).replace(/\D/g, '');
+    if (cleanedPhone.length !== 10) {
+      return res.status(400).json({ error: 'Phone must be 10 digits' });
+    }
+
+    // Parse date and time into ISO datetime
+    const parseDateTime = (dateStr, timeStr) => {
+      // dateStr may be YYYY-MM-DD or DD/MM/YYYY
+      let year, month, day;
+      if (dateStr.includes('/')) {
+        const parts = dateStr.split('/').map(p => p.trim());
+        if (parts[0].length === 4) {
+          year = parseInt(parts[0]);
+          month = parseInt(parts[1]);
+          day = parseInt(parts[2]);
+        } else {
+          day = parseInt(parts[0]);
+          month = parseInt(parts[1]);
+          year = parseInt(parts[2]);
+        }
+      } else {
+        const parts = dateStr.split('-');
+        year = parseInt(parts[0]);
+        month = parseInt(parts[1]);
+        day = parseInt(parts[2]);
+      }
+
+      // timeStr may be HH:MM or H:MM AM/PM
+      let hour = 0;
+      let minute = 0;
+      const ampmMatch = timeStr.match(/(AM|PM|am|pm)/);
+      let timePart = timeStr.replace(/\s?(AM|PM|am|pm)/, '').trim();
+      const t = timePart.split(':');
+      hour = parseInt(t[0] || 0);
+      minute = parseInt(t[1] || 0);
+      if (ampmMatch) {
+        const ampm = ampmMatch[0].toLowerCase();
+        if (ampm === 'pm' && hour < 12) hour += 12;
+        if (ampm === 'am' && hour === 12) hour = 0;
+      }
+
+      const dt = new Date(year, month - 1, day, hour, minute, 0, 0);
+      return dt.toISOString();
+    };
+
+    const dateTime = parseDateTime(date, time);
 
     const data = fs.readFileSync(appointmentsFile, 'utf8');
     const appointments = JSON.parse(data);
 
     const newAppointment = {
       id: Date.now(),
-      fullName,
-      phone,
-      // Only add treatment if present
-      ...(treatment ? { treatment } : {}),
+      patientName,
+      phone: cleanedPhone,
+      date,
+      time,
       dateTime,
+      doctor: doctor || null,
+      purpose: purpose || null,
+      age: age || null,
+      gender: gender || null,
+      address: address || null,
+      referredBy: referredBy || null,
       notes: notes || '',
       status: 'Pending',
       createdAt: new Date().toISOString(),
@@ -61,6 +127,7 @@ app.post('/api/appointments', (req, res) => {
 
     res.status(201).json({ message: 'Appointment booked successfully', appointment: newAppointment });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to create appointment' });
   }
 });

@@ -213,6 +213,7 @@ export default function RadheGovindHospitalWebsite() {
     },
   ];
 
+  // eslint-disable-next-line no-unused-vars -- kept for the testimonials section, currently hidden
   const testimonials = [
     {
       name: 'Prakashrao Pole',
@@ -299,7 +300,6 @@ export default function RadheGovindHospitalWebsite() {
             <a href="#home" className="hover:text-teal-600 transition">Home</a>
             <a href="#about" className="hover:text-teal-600 transition">About</a>
             <a href="#services" className="hover:text-teal-600 transition">Services</a>
-            <a href="#testimonials" className="hover:text-teal-800 transition">Testimonials</a>
             <a href="#appointment" className="hover:text-teal-600 transition">Appointment</a>
             <a href="#contact" className="hover:text-teal-600 transition">Contact</a>
           </nav>
@@ -590,7 +590,7 @@ export default function RadheGovindHospitalWebsite() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Testimonials (temporarily hidden)
       <section id="testimonials" className="py-24 bg-sky-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -651,6 +651,7 @@ export default function RadheGovindHospitalWebsite() {
           </div>
         </div>
       </section>
+      */}
 
       {/* Appointment */}
       <section id="appointment" className="py-24 bg-white">
